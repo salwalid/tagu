@@ -70,18 +70,35 @@ distance = 10 ^ ((measuredPower - RSSI) / (10 * pathLossExponent))
 
 Users can calibrate `measuredPower` by placing the tag 1 meter away and tapping "Calibrate."
 
-### Alert System
+### Alert System — 5-Level Escalation
 
-When a monitored tag's estimated distance exceeds the user-configured threshold:
+When a monitored tag moves away, Tagu escalates through 5 alert levels. Each level's trigger distance is configurable per tag as a percentage of the tag's max alert distance.
 
-1. **Soft alert** (threshold × 0.8): Notification with tag name and current distance
-2. **Hard alert** (threshold × 1.0): Alarm sound + vibration pattern
-3. **Critical alert** (tag disappears from scan): Full alarm — tag is out of BLE range entirely
+| Level | Default Trigger | Alert Type | Behavior |
+|-------|----------------|------------|----------|
+| 1. **Notice** | 60% of distance | Silent notification | Notification shade only, badge on tag card |
+| 2. **Warn** | 75% of distance | Short vibrate | Single vibration pulse + notification |
+| 3. **Alert** | 90% of distance | Vibrate pattern | Repeated vibration pattern + alert tone |
+| 4. **Alarm** | 100% of distance | Ring + vibrate | Alarm sound + continuous vibration |
+| 5. **Panic** | Tag disappears | Full panic mode | Max volume siren, continuous vibration, screen wake, persists until manually dismissed |
 
-Alert sensitivity is configurable:
-- **High**: Alert on single reading beyond threshold
-- **Medium** (default): Alert after 3 consecutive readings beyond threshold (~6 seconds)
-- **Low**: Alert after 5 consecutive readings (~10 seconds)
+**Example:** Tag "Keys" with max distance 10m:
+- Notice at 6m → Warn at 7.5m → Alert at 9m → Alarm at 10m → Panic when tag vanishes from BLE
+
+**Per-tag customization:**
+- Each level's percentage is independently adjustable (e.g., aggressive: 40/50/60/70/gone)
+- Individual levels can be disabled (e.g., skip Notice and Warn, start at Alert)
+- Custom alarm tone per tag
+- Vibration pattern intensity per level
+- Panic mode requires explicit dismiss (swipe + confirm) to prevent accidental silencing
+
+**Alert sensitivity** (consecutive readings before triggering):
+- **Hair trigger**: 1 reading (~2 seconds)
+- **Normal** (default): 3 consecutive readings (~6 seconds)
+- **Relaxed**: 5 consecutive readings (~10 seconds)
+- **Chill**: 8 consecutive readings (~16 seconds)
+
+Sensitivity prevents false alarms from momentary BLE signal fluctuations (e.g., someone walking between you and the tag).
 
 ## Architecture
 
